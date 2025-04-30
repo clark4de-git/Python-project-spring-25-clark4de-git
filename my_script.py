@@ -59,6 +59,9 @@ def list_tasks(due=None, completed=None):
         query += ' AND completed = ?'
         params.append(int(completed))
     
+    # Orders results in descending order by due date
+    query += ' ORDER BY due_date DESC'
+    
     # Carries out the execution of the query with or without the optional options
     courier = conn.cursor()
     courier.execute(query, params)
@@ -85,6 +88,7 @@ def complete_task(task_id):
     conn.commit()
     conn.close()
 
+# Function to delete tasks by task ID
 def delete_task(task_id):
     conn = sqlite3.connect(DB_FILE)
     courier = conn.cursor()
@@ -96,8 +100,30 @@ def delete_task(task_id):
     conn.commit()
     conn.close()
 
+# Main Argparser and subcommand framework created first
+def parse_args():
+    parser = argparse.ArgumentParser(description='Todo List Manager')
+    subparsers = parser.add_subparsers(dest='command')
 
+    # Add command arguments (add, task, --due)
+    add_parser = subparsers.add_parser('add', help='Add a new task')
+    add_parser.add_argument('task', type=str, help='Task description')
+    add_parser.add_argument('--due', type=str, help='Due date (DD-MM-YYYY)', default=None)
 
+    # List command arguments (list, --due, --completed)
+    list_parser = subparsers.add_parser('list', help='List all tasks')
+    list_parser.add_argument('--due', type=str, help='Filter by due date (DD-MM-YYYY)')
+    list_parser.add_argument('--completed', action='store_true', help='Show only completed tasks')
+
+    # Complete command arguments (complete, task_id)
+    complete_parser = subparsers.add_parser('complete', help='Mark task as complete')
+    complete_parser.add_argument('task_id', type=int, help='Task ID required for completion')
+
+    # Remove delete arguments (delete, task_id)
+    delete_parser = subparsers.add_parser('delete', help='Delete a task by ID')
+    delete_parser.add_argument('task_id', type=int, help='Task ID required for deletion')
+
+    return parser.parse_args()
 
 def main():
 
