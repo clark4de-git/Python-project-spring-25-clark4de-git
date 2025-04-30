@@ -6,6 +6,7 @@ from datetime import datetime
 
 DB_FILE = 'todo.db'
 
+# Creates database and table named todolist if it doesn't exist
 def init_db():
     conn = sqlite3.connect(DB_FILE)
     courier = conn.cursor()
@@ -70,6 +71,31 @@ def list_tasks(due=None, completed=None):
         status = "Completed" if row[3] else " "
         print(f"{row[0]}, [{status}] {row[1]} | Due: {row[2] or 'N/A'} | Created: {row[4]}")
     conn.close()
+
+# This function is for completing task in which the value of
+# the completed column becomes 1 rather than 0
+def complete_task(task_id):
+    conn = sqlite3.connect(DB_FILE)
+    courier = conn.cursor()
+    courier.execute('UPDATE todolist SET completed = 1 WHERE id ?', (task_id))
+    if courier.rowcount == 0:
+        print("Error: No task with that ID.")
+    else:
+        print("Task marked as complete.")
+    conn.commit()
+    conn.close()
+
+def delete_task(task_id):
+    conn = sqlite3.connect(DB_FILE)
+    courier = conn.cursor()
+    courier.execute('DELETE FROM todolist WHERE id = ?', (task_id))
+    if courier.rowcount == 0:
+        print("Error: No task with that ID.")
+    else:
+        print("Task deleted.")
+    conn.commit()
+    conn.close()
+
 
 
 
