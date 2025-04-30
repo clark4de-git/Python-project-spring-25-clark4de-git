@@ -24,8 +24,8 @@ def init_db():
 
 # This function checks if the due date argument is formatted right
 def validate_due_date(date_str):
-    if date_str and not re.match('^\d{2}-\d{2}-\d{4}$', date_str):
-        print("Error: Due Date must be in DD-MM-YYYY format.")
+    if date_str and not re.match('^\\d{2}-\\d{2}-\\d{4}$', date_str):
+        print("Error: Due Date must be in MM-DD-YYYY format.")
         sys.exit(1)
 
 # This function is for adding tasks to the todolist which requires a
@@ -44,7 +44,7 @@ def list_tasks(due=None, completed=None):
     conn = sqlite3.connect(DB_FILE)
     # This query variable is initialized here so that it can be
     # appended if additional options/args are given in addition to list
-    query = 'SELECT * from todolist WHERE 1=1'
+    query = 'SELECT * from todolist WHERE 7=7'
     # Variable for appending query
     params = []
 
@@ -71,7 +71,7 @@ def list_tasks(due=None, completed=None):
     if not rows:
         print("No tasks found.")
     for row in rows:
-        status = "Completed" if row[3] else " "
+        status = "Completed" if row[3] else "Incomplete"
         print(f"{row[0]}, [{status}] {row[1]} | Due: {row[2] or 'N/A'} | Created: {row[4]}")
     conn.close()
 
@@ -80,7 +80,7 @@ def list_tasks(due=None, completed=None):
 def complete_task(task_id):
     conn = sqlite3.connect(DB_FILE)
     courier = conn.cursor()
-    courier.execute('UPDATE todolist SET completed = 1 WHERE id ?', (task_id))
+    courier.execute('UPDATE todolist SET completed = 1 WHERE id = ?', (int(task_id),))
     if courier.rowcount == 0:
         print("Error: No task with that ID.")
     else:
@@ -92,7 +92,7 @@ def complete_task(task_id):
 def delete_task(task_id):
     conn = sqlite3.connect(DB_FILE)
     courier = conn.cursor()
-    courier.execute('DELETE FROM todolist WHERE id = ?', (task_id))
+    courier.execute('DELETE FROM todolist WHERE id = ?', (int(task_id),))
     if courier.rowcount == 0:
         print("Error: No task with that ID.")
     else:
@@ -108,12 +108,12 @@ def parse_args():
     # Add command arguments (add, task, --due)
     add_parser = subparsers.add_parser('add', help='Add a new task')
     add_parser.add_argument('task', type=str, help='Task description')
-    add_parser.add_argument('--due', type=str, help='Due date (DD-MM-YYYY)', default=None)
+    add_parser.add_argument('--due', type=str, help='Due date (MM-DD-YYYY)', default=None)
 
     # List command arguments (list, --due, --completed)
     list_parser = subparsers.add_parser('list', help='List all tasks')
-    list_parser.add_argument('--due', type=str, help='Filter by due date (DD-MM-YYYY)')
-    list_parser.add_argument('--completed', action='store_true', help='Show only completed tasks')
+    list_parser.add_argument('--due', type=str, help='Filter by due date (MM-DD-YYYY)')
+    list_parser.add_argument('--completed', type=int, choices=[0, 1], help='Filter by completion status, 0 = incomplete, 1 = complete')
 
     # Complete command arguments (complete, task_id)
     complete_parser = subparsers.add_parser('complete', help='Mark task as complete')
@@ -133,7 +133,7 @@ def main():
     if args.command == 'add':
         add_task(args.task, args.due)
     elif args.command == 'list':
-        list_tasks(due=args.due, complete=args.completed)
+        list_tasks(due=args.due, completed=args.completed)
     elif args.command == 'complete':
         complete_task(args.task_id)
     elif args.command == 'delete':
