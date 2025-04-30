@@ -125,10 +125,22 @@ def parse_args():
 
     return parser.parse_args()
 
+# Function to filter the arguments and run script based on input
 def main():
-
+    args = parse_args()
     init_db()
 
+    if args.command == 'add':
+        add_task(args.task, args.due)
+    elif args.command == 'list':
+        list_tasks(due=args.due, complete=args.completed)
+    elif args.command == 'complete':
+        complete_task(args.task_id)
+    elif args.command == 'delete':
+        delete_task(args.task_id)
+    else:
+        print("Invalid command. Use -h for help")
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()
